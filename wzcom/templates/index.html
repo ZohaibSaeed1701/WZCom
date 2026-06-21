@@ -1,0 +1,521 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WZCOM | E-Commerce Analytics Dashboard</title>
+    <!-- Modern Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation (Left) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-chart-line neon-text-purple"></i>
+                <span>WZCOM</span>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-view="dashboard">
+                    <i class="fa-solid fa-gauge"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="menu-item" data-view="charts">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Visual Analysis</span>
+                </a>
+                <a href="#" class="menu-item" data-view="explorer">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Data Explorer</span>
+                </a>
+                <a href="#" class="menu-item" data-view="profile">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>User Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-badge" id="userBadge">
+                    <div class="user-avatar">
+                        <i class="fa-solid fa-user-ninja"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" id="badgeUsername">Guest</span>
+                        <span class="user-status" id="badgeStatus">View Only</span>
+                    </div>
+                </div>
+                <button class="logout-btn" id="sidebarLogout" style="display: none;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard View Container (Right) -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-title-area">
+                    <h1 id="viewTitle">Dashboard Overview</h1>
+                    <p id="viewSubtitle" class="text-muted">High-level sales and profit statistics</p>
+                </div>
+                <div class="header-actions">
+                    <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Light/Dark Theme">
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
+                    <button class="btn btn-primary" id="headerLoginBtn">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic View Containers -->
+            <div class="view-pane" id="view-dashboard">
+                <!-- KPI Section -->
+                <section class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-purple">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <h3>Total Sales</h3>
+                            <p class="kpi-value" id="kpiSales">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-teal">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <h3>Total Profit</h3>
+                            <p class="kpi-value" id="kpiProfit">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-blue">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <h3>Orders Volume</h3>
+                            <p class="kpi-value" id="kpiOrders">0</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon bg-orange">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
+                        <div class="kpi-details">
+                            <h3>Avg Discount</h3>
+                            <p class="kpi-value" id="kpiDiscount">0%</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="dashboard-split">
+                    <!-- Automated Insights Panel -->
+                    <div class="card insights-card">
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-brain"></i> Automated AI Insights</h2>
+                            <span class="badge badge-success">Generated Live</span>
+                        </div>
+                        <div class="card-body">
+                            <ul class="insights-list" id="insightsList">
+                                <li>Loading insights...</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Top 10 High Value Transactions -->
+                    <div class="card top-transactions-card">
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-trophy"></i> Top 10 High-Value Orders</h2>
+                        </div>
+                        <div class="card-body scroll-table-container">
+                            <table class="data-table small-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Sales</th>
+                                        <th>Profit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topOrdersTableBody">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Loading top orders...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-pane" id="view-charts" style="display: none;">
+                <!-- Global Filters Panel -->
+                <section class="filters-card card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-sliders"></i> Global Analysis Filters</h2>
+                        <button class="btn btn-outline" id="resetFiltersBtn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+                    </div>
+                    <div class="card-body filters-grid">
+                        <div class="filter-group">
+                            <label for="filterRegion">Region</label>
+                            <select id="filterRegion">
+                                <option value="">All Regions</option>
+                                <option value="North America">North America</option>
+                                <option value="Europe">Europe</option>
+                                <option value="South America">South America</option>
+                                <option value="Asia Pacific">Asia Pacific</option>
+                                <option value="Middle East & Africa">Middle East & Africa</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterCategory">Product Category</label>
+                            <select id="filterCategory">
+                                <option value="">All Categories</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Office Supplies">Office Supplies</option>
+                                <option value="Furniture">Furniture</option>
+                                <option value="Clothing & Accessories">Clothing & Accessories</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterSegment">Segment</label>
+                            <select id="filterSegment">
+                                <option value="">All Segments</option>
+                                <option value="Consumer">Consumer</option>
+                                <option value="Corporate">Corporate</option>
+                                <option value="Home Office">Home Office</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterPayment">Payment Method</label>
+                            <select id="filterPayment">
+                                <option value="">All Methods</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="PayPal">PayPal</option>
+                                <option value="Cash on Delivery">Cash on Delivery</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterDateFrom">Start Date</label>
+                            <input type="date" id="filterDateFrom">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterDateTo">End Date</label>
+                            <input type="date" id="filterDateTo">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Visualization Panel (5 Charts) -->
+                <section class="charts-container">
+                    <div class="chart-card card col-2">
+                        <h3><i class="fa-solid fa-chart-line"></i> Monthly Performance Trend</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card card">
+                        <h3><i class="fa-solid fa-chart-bar"></i> Sales & Profit by Category</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card card">
+                        <h3><i class="fa-solid fa-chart-pie"></i> Customer Segment Share</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card card">
+                        <h3><i class="fa-solid fa-bars-staggered"></i> Discount Frequency</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="histogramChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card card">
+                        <h3><i class="fa-solid fa-circle-nodes"></i> Sales vs. Quantity Correlation</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="view-pane" id="view-explorer" style="display: none;">
+                <!-- Table CRUD Actions Control -->
+                <div class="table-controls card">
+                    <div class="controls-row">
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="explorerSearch" placeholder="Search orders, customers, or products...">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-success" id="addOrderBtn"><i class="fa-solid fa-plus"></i> Add New Record</button>
+                            <button class="btn btn-outline" id="exportCsvBtn"><i class="fa-solid fa-file-excel"></i> Export CSV</button>
+                            <button class="btn btn-outline" id="printReportBtn"><i class="fa-solid fa-print"></i> Print Report</button>
+                        </div>
+                    </div>
+                    <div class="controls-row">
+                        <div class="control-group">
+                            <label for="sortSelector">Sort By:</label>
+                            <select id="sortSelector">
+                                <option value="order_date">Order Date</option>
+                                <option value="total_sales">Sales</option>
+                                <option value="profit">Profit</option>
+                                <option value="quantity">Quantity</option>
+                            </select>
+                            <button class="btn-toggle" id="sortOrderToggle" data-order="desc">
+                                <i class="fa-solid fa-sort-down"></i> Desc
+                            </button>
+                        </div>
+                        <div class="control-group">
+                            <label for="perPageSelector">Show:</label>
+                            <select id="perPageSelector">
+                                <option value="10">10 entries</option>
+                                <option value="25">25 entries</option>
+                                <option value="50">50 entries</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Entries Table -->
+                <div class="card table-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Segment</th>
+                                    <th>Region</th>
+                                    <th>Category</th>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Sales</th>
+                                    <th>Profit</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="explorerTableBody">
+                                <tr>
+                                    <td colspan="11" class="text-center">Loading transactions...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination Footer -->
+                    <div class="table-footer">
+                        <span id="tablePaginationInfo">Showing 0 to 0 of 0 entries</span>
+                        <div class="pagination-buttons">
+                            <button class="btn btn-outline btn-sm" id="prevPageBtn"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                            <span class="page-number-display" id="pageNumberDisplay">Page 1 of 1</span>
+                            <button class="btn btn-outline btn-sm" id="nextPageBtn">Next <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-pane" id="view-profile" style="display: none;">
+                <!-- Auth Forms and Profile Info -->
+                <div id="authFormsContainer" class="auth-box">
+                    <div class="auth-tabs">
+                        <button class="auth-tab-btn active" id="tabLoginBtn">Login</button>
+                        <button class="auth-tab-btn" id="tabRegisterBtn">Register</button>
+                    </div>
+                    
+                    <!-- Login Form -->
+                    <form id="loginForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="loginUsername">Username</label>
+                            <input type="text" id="loginUsername" placeholder="Enter username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        <p class="auth-error-msg text-danger" id="loginErrorMsg"></p>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="registerForm" class="auth-form" style="display: none;">
+                        <div class="form-group">
+                            <label for="registerUsername">Username</label>
+                            <input type="text" id="registerUsername" placeholder="Choose username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerEmail">Email</label>
+                            <input type="email" id="registerEmail" placeholder="Enter email address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="registerPassword">Password</label>
+                            <input type="password" id="registerPassword" placeholder="Choose strong password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                        <p class="auth-error-msg text-danger" id="registerErrorMsg"></p>
+                    </form>
+                </div>
+
+                <div id="profileDetailsContainer" class="card profile-box" style="display: none;">
+                    <div class="profile-header-card">
+                        <i class="fa-solid fa-circle-user profile-avatar"></i>
+                        <h2 id="profileUsername">admin</h2>
+                        <span class="role-badge">System Operator</span>
+                    </div>
+                    <div class="profile-stats-grid">
+                        <div class="p-stat">
+                            <span class="p-val">Standard DB</span>
+                            <span class="p-lbl">Role Permissions</span>
+                        </div>
+                        <div class="p-stat">
+                            <span class="p-val" id="profileTime">2026-06-22</span>
+                            <span class="p-lbl">Last Active Session</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions-panel">
+                        <button class="btn btn-danger" id="profileLogoutBtn">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout Session
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Transaction Modal -->
+    <div class="modal-overlay" id="orderModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Transaction Record</h2>
+                <button class="modal-close-btn" id="closeOrderModalBtn">&times;</button>
+            </div>
+            <form id="orderForm">
+                <input type="hidden" id="editRecordId">
+                <div class="modal-grid">
+                    <div class="form-group">
+                        <label for="modalOrderId">Order ID</label>
+                        <input type="text" id="modalOrderId" placeholder="ORD-10001" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalOrderDate">Order Date</label>
+                        <input type="date" id="modalOrderDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalCustomerName">Customer Name</label>
+                        <input type="text" id="modalCustomerName" placeholder="e.g. Karen Suzuki" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalCustomerSegment">Customer Segment</label>
+                        <select id="modalCustomerSegment" required>
+                            <option value="Consumer">Consumer</option>
+                            <option value="Corporate">Corporate</option>
+                            <option value="Home Office">Home Office</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalCountry">Country</label>
+                        <input type="text" id="modalCountry" placeholder="e.g. United States" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalRegion">Region</label>
+                        <select id="modalRegion" required>
+                            <option value="North America">North America</option>
+                            <option value="Europe">Europe</option>
+                            <option value="South America">South America</option>
+                            <option value="Asia Pacific">Asia Pacific</option>
+                            <option value="Middle East & Africa">Middle East & Africa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalProductCategory">Product Category</label>
+                        <select id="modalProductCategory" required>
+                            <option value="Technology">Technology</option>
+                            <option value="Office Supplies">Office Supplies</option>
+                            <option value="Furniture">Furniture</option>
+                            <option value="Clothing & Accessories">Clothing & Accessories</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalProductName">Product Name</label>
+                        <input type="text" id="modalProductName" placeholder="e.g. Webcam HD 1080p" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalQuantity">Quantity</label>
+                        <input type="number" id="modalQuantity" min="1" max="100" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalUnitPrice">Unit Price ($)</label>
+                        <input type="number" id="modalUnitPrice" step="0.01" min="0.1" placeholder="49.99" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalDiscountPercent">Discount Percent (%)</label>
+                        <select id="modalDiscountPercent" required>
+                            <option value="0">0%</option>
+                            <option value="5">5%</option>
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                            <option value="25">25%</option>
+                            <option value="30">30%</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalShippingCost">Shipping Cost ($)</label>
+                        <input type="number" id="modalShippingCost" step="0.01" min="0" placeholder="5.99" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalPaymentMethod">Payment Method</label>
+                        <select id="modalPaymentMethod" required>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Cash on Delivery">Cash on Delivery</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group col-2 info-recalc-box">
+                        <div class="recalc-val">
+                            <span class="recalc-lbl">Estimated Total Sales:</span>
+                            <span id="recalcSalesValue">$0.00</span>
+                        </div>
+                        <div class="recalc-val">
+                            <span class="recalc-lbl">Estimated Profit:</span>
+                            <span id="recalcProfitValue">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <p id="modalErrorMsg" class="text-danger mt-2"></p>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="cancelOrderModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveOrderBtn">Save Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Custom Script -->
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
